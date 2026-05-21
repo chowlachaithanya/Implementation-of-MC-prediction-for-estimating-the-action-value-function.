@@ -57,7 +57,91 @@ Monte Carlo methods estimate action values by averaging returns obtained after v
 
 ## Program
 
-```python
+```# Monte Carlo Prediction for Action-Value Function
+
+import numpy as np
+from collections import defaultdict
+import gymnasium as gym
+
+# Create Environment
+env = gym.make("FrozenLake-v1", is_slippery=False)
+
+# Parameters
+gamma = 0.9
+episodes = 5000
+
+# Action-Value Function
+Q = defaultdict(float)
+
+# Returns storage
+returns = defaultdict(list)
+
+# Random Policy
+def policy(state):
+    return env.action_space.sample()
+
+# Generate Episode
+def generate_episode():
+
+    episode = []
+
+    # Reset environment
+    state, info = env.reset()
+
+    done = False
+
+    while not done:
+
+        # Choose action
+        action = policy(state)
+
+        # Take action
+        next_state, reward, terminated, truncated, info = env.step(action)
+
+        done = terminated or truncated
+
+        # Store transition
+        episode.append((state, action, reward))
+
+        # Move to next state
+        state = next_state
+
+    return episode
+
+# Monte Carlo Prediction
+for ep in range(episodes):
+
+    episode = generate_episode()
+
+    G = 0
+
+    visited_pairs = set()
+
+    # Traverse backward
+    for t in reversed(range(len(episode))):
+
+        state, action, reward = episode[t]
+
+        # Calculate return
+        G = gamma * G + reward
+
+        # First-Visit MC
+        if (state, action) not in visited_pairs:
+
+            returns[(state, action)].append(G)
+
+            Q[(state, action)] = np.mean(returns[(state, action)])
+
+            visited_pairs.add((state, action))
+
+# Print Q values
+print("\nAction Value Function:\n")
+
+for state in range(env.observation_space.n):
+
+    for action in range(env.action_space.n):
+
+        print(f"Q({state}, {action}) = {Q[(state, action)]:.3f}")
 
 ```
 
@@ -65,24 +149,9 @@ Monte Carlo methods estimate action values by averaging returns obtained after v
 
 ## Output
 
-```text
+<img width="681" height="463" alt="image" src="https://github.com/user-attachments/assets/6dce277b-bec1-4fba-b96f-782097c6a777" />
 
-
-```
-
----
 
 ## Result
 
 Thus, the Monte Carlo Prediction algorithm was successfully implemented for estimating the action-value function \(Q(s,a)\). The expected returns for different state-action pairs were calculated using sampled episodes generated from the environment.
-
----
-
-
----
-
-
-
----
-
----
